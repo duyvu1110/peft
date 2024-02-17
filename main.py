@@ -130,7 +130,6 @@ if __name__ == '__main__':
     model = AutoModelForSeq2SeqLM.from_pretrained("VietAI/vit5-base",device_map={"":0},
     trust_remote_code=True,
     quantization_config=bnb_config)
-    model.cuda()
     prefix = 'Please extract five elements including subject, object, aspect, predicate, and comparison type in the sentence'
     max_input_length = 156
     max_target_length = 156
