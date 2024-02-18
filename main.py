@@ -121,6 +121,7 @@ if __name__ == '__main__':
     # # dev_ds  = load_from_disk('dev_dataset')
     # # test_ds = load_from_disk('test_dataset')
     tokenizer = AutoTokenizer.from_pretrained("nhanv/open-llama-7b-vi")
+    tokenizer.pad_token = tokenizer.eos_token
     bnb_config = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_use_double_quant=True,
