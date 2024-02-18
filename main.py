@@ -12,7 +12,8 @@ from datasets import load_dataset
 import pyarrow as pa
 import pandas as pd
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, Seq2SeqTrainingArguments, DataCollatorForSeq2Seq, \
-    Seq2SeqTrainer, BitsAndBytesConfig, AutoModelForCausalLM, TrainingArguments, DataCollator
+    Seq2SeqTrainer, BitsAndBytesConfig, AutoModelForCausalLM, TrainingArguments, DataCollator, \
+    DataCollatorForLanguageModeling
 import numpy as np
 import wandb
 wandb.login(key = '239be5b07ed02206e0e9e1c0afc955ee13a98900')
@@ -201,7 +202,7 @@ if __name__ == '__main__':
         max_steps=3000,
         lr_scheduler_type="linear"
     )
-    data_collator = DataCollator(tokenizer)
+    data_collator = DataCollatorForLanguageModeling(tokenizer)
 
 
     def postprocess_text(preds, labels):
