@@ -161,6 +161,12 @@ if __name__ == '__main__':
         return model_inputs
 
 
+    def formatting_prompts_func(example):
+        output_texts = []
+        for i in range(len(example['instruction'])):
+            text = example['key'][i] + example['value'][i]
+            output_texts.append(text)
+        return output_texts
     tokenized_ds_train = train_ds.map(preprocess_function, batched=True)
     #tokenized_ds_test = test_ds.map(preprocess_function, batched=True)
     tokenized_ds_dev = dev_ds.map(preprocess_function, batched=True)
@@ -195,7 +201,7 @@ if __name__ == '__main__':
         max_steps=3000,
         lr_scheduler_type="linear"
     )
-    #data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
+    data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
 
 
     def postprocess_text(preds, labels):
@@ -238,7 +244,9 @@ if __name__ == '__main__':
         peft_config=lora_config,
         max_seq_length=120,
         tokenizer=tokenizer,
-        args=args
+        args=args,
+        formatting_func=formatting_prompts_func,
+        data_collator=data_collator,
     )
     trainer.train()
     trainer.save_model()
