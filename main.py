@@ -202,7 +202,7 @@ if __name__ == '__main__':
         max_steps=3000,
         lr_scheduler_type="linear"
     )
-    data_collator = DataCollatorForLanguageModeling(tokenizer)
+    data_collator = DataCollatorForSeq2Seq(tokenizer)
 
 
     def postprocess_text(preds, labels):
@@ -243,11 +243,10 @@ if __name__ == '__main__':
         train_dataset=tokenized_ds_train,
         eval_dataset=tokenized_ds_dev,
         peft_config=lora_config,
-        max_seq_length=120,
+        max_seq_length=156,
         tokenizer=tokenizer,
         args=args,
-        formatting_func=formatting_prompts_func,
-        data_collator=data_collator,
+        formatting_func=formatting_prompts_func
     )
     trainer.train()
     trainer.save_model()
