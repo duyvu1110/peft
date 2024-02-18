@@ -4,6 +4,7 @@ import json
 import torch
 from peft import PeftModel
 from peft import LoraConfig, get_peft_model
+from peft import prepare_model_for_kbit_training, LoraConfig, get_peft_model
 import os
 import evaluate
 from datasets import Dataset, load_from_disk
@@ -17,7 +18,7 @@ import wandb
 wandb.login(key = '239be5b07ed02206e0e9e1c0afc955ee13a98900')
 os.environ["WANDB_PROJECT"]="T5-finetune"
 metric = evaluate.load("sacrebleu")
-
+from trl import SFTTrainer
 
 
 def read_file(f_name):
@@ -121,7 +122,7 @@ if __name__ == '__main__':
     # # dev_ds  = load_from_disk('dev_dataset')
     # # test_ds = load_from_disk('test_dataset')
     tokenizer = AutoTokenizer.from_pretrained("nhanv/open-llama-7b-vi")
-    tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.pad_token = tokenizer.unk_token
     bnb_config = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_use_double_quant=True,
@@ -134,12 +135,13 @@ if __name__ == '__main__':
     model = AutoModelForCausalLM.from_pretrained("nhanv/open-llama-7b-vi",device_map={"":0},
     trust_remote_code=True,
     quantization_config=bnb_config)
+    model = prepare_model_for_kbit_training(model)
     prefix = 'Please extract five elements including subject, object, aspect, predicate, and comparison type in the sentence'
     max_input_length = 156
     max_target_length = 156
     model.config.use_cache = False
     lora_config = LoraConfig(
-        r=16,
+        r=64,
         lora_alpha=16,
         target_modules=["q_proj", "v_proj"],
         lora_dropout=0.05,
@@ -162,20 +164,38 @@ if __name__ == '__main__':
     tokenized_ds_train = train_ds.map(preprocess_function, batched=True)
     #tokenized_ds_test = test_ds.map(preprocess_function, batched=True)
     tokenized_ds_dev = dev_ds.map(preprocess_function, batched=True)
-    args = Seq2SeqTrainingArguments(
-        "T5_fine_tune",
-        evaluation_strategy="epoch",
-        learning_rate=2e-5,
+    # args = Seq2SeqTrainingArguments(
+    #     "T5_fine_tune",
+    #     evaluation_strategy="epoch",
+    #     learning_rate=2e-5,
+    #     per_device_train_batch_size=1,
+    #     per_device_eval_batch_size=1,
+    #     weight_decay=0.01,
+    #     save_total_limit=1,
+    #     num_train_epochs=25,
+    #     predict_with_generate=True,
+    #     report_to='wandb',
+    #
+    # )
+    training_arguments = TrainingArguments(
+        output_dir="./results/",
+        evaluation_strategy="steps",
+        optim="paged_adamw_8bit",
+        save_steps=500,
+        log_level="debug",
+        logging_steps=500,
+        learning_rate=1e-4,
+        eval_steps=500,
+        fp16=True,
+        do_eval=True,
         per_device_train_batch_size=1,
         per_device_eval_batch_size=1,
-        weight_decay=0.01,
-        save_total_limit=1,
-        num_train_epochs=25,
-        predict_with_generate=True,
-        report_to='wandb',
-
+        # gradient_accumulation_steps=1,
+        warmup_steps=100,
+        max_steps=3000,
+        lr_scheduler_type="linear"
     )
-    data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
+    #data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
 
 
     def postprocess_text(preds, labels):
@@ -202,14 +222,24 @@ if __name__ == '__main__':
         return result
 
 
-    trainer = Seq2SeqTrainer(
-        model,
-        args,
+    # trainer = Seq2SeqTrainer(
+    #     model,
+    #     args,
+    #     train_dataset=tokenized_ds_train,
+    #     eval_dataset=tokenized_ds_dev,
+    #     data_collator=data_collator,
+    #     tokenizer=tokenizer,
+    #     compute_metrics=compute_metrics,
+    # )
+    trainer = SFTTrainer(
+        model=model,
         train_dataset=tokenized_ds_train,
         eval_dataset=tokenized_ds_dev,
-        data_collator=data_collator,
+        peft_config=lora_config,
+        dataset_text_field="text",
+        max_seq_length=120,
         tokenizer=tokenizer,
-        compute_metrics=compute_metrics,
+        args=args
     )
     trainer.train()
     trainer.save_model()
