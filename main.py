@@ -177,7 +177,7 @@ if __name__ == '__main__':
     #     report_to='wandb',
     #
     # )
-    training_arguments = TrainingArguments(
+    args = TrainingArguments(
         output_dir="./results/",
         evaluation_strategy="steps",
         optim="paged_adamw_8bit",
