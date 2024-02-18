@@ -120,14 +120,14 @@ if __name__ == '__main__':
     # train_ds = load_from_disk('train_dataset')
     # # dev_ds  = load_from_disk('dev_dataset')
     # # test_ds = load_from_disk('test_dataset')
-    tokenizer = AutoTokenizer.from_pretrained("VietAI/vit5-base")
+    tokenizer = AutoTokenizer.from_pretrained("VietAI/vit5-large")
     bnb_config = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_use_double_quant=True,
         bnb_4bit_quant_type="nf4",
         bnb_4bit_compute_dtype=torch.float16
     )
-    model = AutoModelForSeq2SeqLM.from_pretrained("VietAI/vit5-base",device_map={"":0},
+    model = AutoModelForSeq2SeqLM.from_pretrained("VietAI/vit5-large",device_map={"":0},
     trust_remote_code=True,
     quantization_config=bnb_config)
     prefix = 'Please extract five elements including subject, object, aspect, predicate, and comparison type in the sentence'
