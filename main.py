@@ -12,7 +12,7 @@ from datasets import load_dataset
 import pyarrow as pa
 import pandas as pd
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, Seq2SeqTrainingArguments, DataCollatorForSeq2Seq, \
-    Seq2SeqTrainer, BitsAndBytesConfig, AutoModelForCausalLM
+    Seq2SeqTrainer, BitsAndBytesConfig, AutoModelForCausalLM, TrainingArguments
 import numpy as np
 import wandb
 wandb.login(key = '239be5b07ed02206e0e9e1c0afc955ee13a98900')
