@@ -163,8 +163,8 @@ if __name__ == '__main__':
 
     def formatting_prompts_func(example):
         output_texts = []
-        for i in range(len(example['instruction'])):
-            text = example['key'][i] + example['value'][i]
+        for i in range(len(example)):
+            text = example[i]['key'] + example[i]['value']
             output_texts.append(text)
         return output_texts
     tokenized_ds_train = train_ds.map(preprocess_function, batched=True)
