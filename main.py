@@ -236,7 +236,6 @@ if __name__ == '__main__':
         train_dataset=tokenized_ds_train,
         eval_dataset=tokenized_ds_dev,
         peft_config=lora_config,
-        dataset_text_field="text",
         max_seq_length=120,
         tokenizer=tokenizer,
         args=args
