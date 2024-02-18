@@ -120,7 +120,7 @@ if __name__ == '__main__':
     # train_ds = load_from_disk('train_dataset')
     # # dev_ds  = load_from_disk('dev_dataset')
     # # test_ds = load_from_disk('test_dataset')
-    tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf")
+    tokenizer = AutoTokenizer.from_pretrained("bkai-foundation-models/vietnamese-llama2-7b-40GB")
     bnb_config = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_use_double_quant=True,
@@ -130,7 +130,7 @@ if __name__ == '__main__':
     # model = AutoModelForSeq2SeqLM.from_pretrained("VietAI/vit5-large",device_map={"":0},
     # trust_remote_code=True,
     # quantization_config=bnb_config)
-    model = AutoModelForCausalLM.from_pretrained("1TuanPham/bkai-vietnamese-llama2-7b-sharded",device_map={"":0},
+    model = AutoModelForCausalLM.from_pretrained("bkai-foundation-models/vietnamese-llama2-7b-40GB",device_map={"":0},
     trust_remote_code=True,
     quantization_config=bnb_config)
     prefix = 'Please extract five elements including subject, object, aspect, predicate, and comparison type in the sentence'
